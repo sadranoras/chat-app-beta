@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>سیراچت</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image" href="./assets/images/favicon.png">
+  <!-- <link rel="icon" href="./assets/images/favicon.png"> -->
+</head>
+
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+  <header class="bg-blue-700 text-white p-4 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <img style="width: 50px; width: 50px; border: 2px dashed aqua; border-radius: 25%; "
+        src="./assets/images/417a030f-abf5-4f82-8cfb-0949a572d74e.png" alt="لوگو پیام‌رسان سیراچت">
+      <h1 class="text-lg font-bold">سیراچت</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <div id="adminPanel"></div>
+      <a href="/change-password.html" class="hover:underline">تغییر رمز عبور</a>
+      <a href="/logout" class="hover:underline">خروج</a>
+    </div>
+  </header>
+
+  <main class="flex flex-1 p-4 gap-4 max-w-full">
+
+    <!-- لیست کاربران برای انتخاب گیرنده پیام خصوصی -->
+    <section class="w-1/4 bg-white rounded shadow p-4 flex flex-col">
+      <h2 class="font-bold mb-2">کاربران</h2>
+      <select id="usersSelect" class="border p-2 rounded mb-4">
+        <option value="">همه (پیام عمومی)</option>
+      </select>
+    </section>
+
+    <!-- بخش چت -->
+    <section class="flex-1 flex flex-col bg-white rounded shadow p-4">
+      <div id="messagesContainer" dir="rtl"
+        class="flex flex-col gap-2 overflow-auto mb-4 h-[400px] border p-2 rounded bg-gray-50"></div>
+
+      <form id="messageForm" class="flex gap-2">
+        <input type="text" id="messageInput" placeholder="پیام خود را بنویسید..." required
+          class="flex-1 p-2 border rounded" autocomplete="off" />
+
+        <input type="file" id="fileInput" class="border p-2 rounded" />
+
+        <button type="submit" class="bg-blue-700 text-white px-4 rounded hover:bg-blue-800 transition">
+          ارسال
+        </button>
+      </form>
+    </section>
+
+  </main>
+
+  <script>
+    let currentUser = null;
+
+    // دریافت اطلاعات کاربر فعلی
+    async function fetchProfile() {
+      const res = await fetch('/profile');
+      if (res.ok) {
+        currentUser = await res.json();
+        await fetchUsers();
+        fetchMessages();
+        setInterval(fetchMessages, 3000);
+      } else {
+        window.location.href = '/login.html';
+      }
+    }
+
+    // گرفتن لیست کاربران برای انتخاب گیرنده پیام خصوصی
+    async function fetchUsers() {
+      const res = await fetch('/users');
+      if (!res.ok) return alert('خطا در دریافت لیست کاربران');
+      const users = await res.json();
+      const select = document.getElementById('usersSelect');
+      select.innerHTML = '<option value="">همه (پیام عمومی)</option>';
+      users.forEach(user => {
+        if (user.id !== currentUser.id)
+          select.innerHTML += `<option value="${user.id}">${user.username}${user.role === 'admin' ? ' (ادمین)' : ''}</option>`;
+      });
+    }
+
+    // گرفتن پیام‌ها
+    async function fetchMessages() {
+      const res = await fetch('/messages');
+      if (!res.ok) return console.error('خطا در دریافت پیام‌ها');
+      const messages = await res.json();
+      const container = document.getElementById('messagesContainer');
+      container.innerHTML = '';
+      messages.forEach(msg => {
+        const isPrivate = msg.receiver_id !== null;
+        const fromMe = msg.sender_id === currentUser.id;
+        let bgClass = fromMe ? 'bg-blue-100 text-right' : 'bg-gray-200 text-left';
+        if (isPrivate) bgClass = 'bg-yellow-100 text-left italic';
+
+        const div = document.createElement('div');
+        div.className = `p-2 rounded ${bgClass}`;
+        div.dir = 'rtl';
+        div.style.textAlign = 'right';
+        let fileHtml = '';
+
+        if (msg.file_path) {
+          fileHtml = `
+            <br>
+            <a href="/uploads/${msg.file_path}"
+               target="_blank"
+               class="text-blue-600 underline">
+                📎 دانلود فایل
+            </a>
+          `;
+        }
+
+        div.innerHTML = `
+          <b>${msg.sender}</b>
+          <br>
+          ${msg.content || ''}
+          ${fileHtml}
+          <br>
+          <small>${new Date(msg.created_at).toLocaleString('fa-IR')}</small>
+        `;
+        // اگر ادمین است، دکمه حذف پیام اضافه کن
+        if (currentUser.role === 'admin') {
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'حذف';
+          delBtn.className = 'ml-2 text-red-600 hover:underline text-xs';
+          delBtn.onclick = async () => {
+            if (confirm('آیا از حذف این پیام مطمئن هستید؟')) {
+              const res = await fetch(`/message/${msg.id}`, { method: 'DELETE' });
+              if (res.ok) fetchMessages();
+              else alert('خطا در حذف پیام');
+            }
+          };
+          div.appendChild(delBtn);
+        }
+
+
+        if (currentUser && currentUser.role === 'admin') {
+          const panel = document.getElementById('adminPanel');
+
+          // اگر قبلاً ساخته شده، دوباره نساز
+          if (!document.getElementById('registerBtn')) {
+            const registerBtn = document.createElement('button');
+
+            registerBtn.id = 'registerBtn';
+            registerBtn.textContent = 'ثبت نام کاربر جدید';
+            registerBtn.className = 'text-white hover:underline';
+
+            registerBtn.onclick = () => {
+              window.location.href = './register-admin.html';
+            };
+
+            panel.appendChild(registerBtn);
+          }
+        }
+
+        container.appendChild(div);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // ارسال پیام جدید
+    document.getElementById('messageForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const content = document.getElementById('messageInput').value.trim();
+      if (!content) return;
+
+      const receiverId = document.getElementById('usersSelect').value || null;
+
+      const fileInput = document.getElementById('fileInput');
+
+      const formData = new FormData();
+      formData.append('content', content);
+      formData.append('receiverId', receiverId);
+
+      if (fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+      }
+
+      const res = await fetch('/message', {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        document.getElementById('messageForm').reset();
+        fetchMessages();
+      } else {
+        alert(await res.text());
+      }
+    });
+
+    fetchProfile();
+
+  </script>
+
+</body>
+
+</html>

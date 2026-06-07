@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ورود | سیراچت</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded shadow max-w-md w-full">
+    <div style="display: flex; margin-bottom: 10px; border-radius: 5px; align-items: center; justify-content: center;" class="bg-blue-700">
+      <img style="width: 50px; height: 50px; margin-left: 10px; border-radius: 25%; border: 2px dashed aqua;" src="./assets/images/417a030f-abf5-4f82-8cfb-0949a572d74e.png" alt="">
+      <h1 class="text-2xl mb-2.5 text-center font-bold" style="display: flex; animation: pulse; color:gold; cursor: default;">ورود به سیراچت</h1>
+    </div>
+    <form id="loginForm" class="flex flex-col gap-4">
+      <input type="text" id="username" placeholder="نام کاربری" required class="border p-2 rounded" />
+      <input type="password" id="password" placeholder="رمز عبور" required class="border p-2 rounded" />
+      <button type="submit" class="bg-blue-700 text-white py-2 rounded hover:bg-blue-800 transition">
+        ورود
+      </button>
+    </form>
+    <p class="mt-4 text-center">
+      حساب ندارید؟
+      <a href="/register.html" class="text-blue-700 hover:underline">ثبت‌نام</a>
+    </p>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (res.ok) {
+        window.location.href = '/chat.html';
+      } else {
+        const text = await res.text();
+        alert(text);
+      }
+    });
+  </script>
+</body>
+
+</html>
