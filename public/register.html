@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ثبت‌نام | سیراچت</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image" href="./assets/images/417a030f-abf5-4f82-8cfb-0949a572d74e.png">
+
 </head>
+
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
   <div class="bg-white p-8 rounded shadow max-w-md w-full">
-    <h1 class="text-2xl mb-6 text-center font-bold">ثبت‌نام در سیراچت</h1>
+    <div style="display: flex; margin-bottom: 10px; border-radius: 5px; align-items: center; justify-content: center;"
+      class="bg-green-700">
+      <img style="width: 50px; height: 50px; margin-left: 10px; border-radius: 25%; border: 2px dashed aqua;"
+        src="./assets/images/417a030f-abf5-4f82-8cfb-0949a572d74e.png" alt="">
+      <h1 class="magic-text text-2xl mb-2.5 text-center font-bold" style="display: flex; cursor: default;">ورود به
+        سیراچت</h1>
+    </div>
     <form id="registerForm" class="flex flex-col gap-4">
-      <input
-        type="text"
-        id="username"
-        placeholder="نام کاربری"
-        required
-        class="border p-2 rounded"
-      />
-      <input
-        type="password"
-        id="password"
-        placeholder="رمز عبور"
-        required
-        class="border p-2 rounded"
-      />
-      <button
-        type="submit"
-        class="bg-green-700 text-white py-2 rounded hover:bg-green-800 transition"
-      >
+      <input type="text" id="username" placeholder="نام کاربری" required class="border p-2 rounded" />
+      <input type="password" id="password" placeholder="رمز عبور" required class="border p-2 rounded" />
+      <button type="submit" class="bg-green-700 text-white py-2 rounded hover:bg-green-800 transition">
         ثبت‌نام
       </button>
     </form>
@@ -59,4 +55,5 @@
     });
   </script>
 </body>
+
 </html>
